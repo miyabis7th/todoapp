@@ -12,8 +12,15 @@ def create_app():
     # Ensure the upload directory exists
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     
-    # Initialize Firestore client
-    db = firestore.Client()
+    # Initialize Firestore client (only in production/Cloud Run)
+    try:
+        from google.cloud import firestore
+        db = firestore.Client()
+        print("Firestore client initialized successfully")
+    except Exception as e:
+        print(f"Firestore initialization failed: {e}")
+        # Use a mock database for local development
+        db = None
     
     # Make db accessible to other modules
     app.db = db

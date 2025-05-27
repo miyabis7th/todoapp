@@ -13,12 +13,20 @@ def allowed_file(filename):
 def register_routes(app):
     @app.route('/')
     def index():
-        todos_ref = app.db.collection('todos')
         todos = []
-        for doc in todos_ref.order_by('created_at', direction='DESCENDING').stream():
-            todo_data = doc.to_dict()
-            todo_data['id'] = doc.id
-            todos.append(Todo.from_dict(todo_data))
+        if app.db:
+            try:
+                todos_ref = app.db.collection('todos')
+                for doc in todos_ref.order_by('created_at', direction='DESCENDING').stream():
+                    todo_data = doc.to_dict()
+                    todo_data['id'] = doc.id
+                    todos.append(Todo.from_dict(todo_data))
+            except Exception as e:
+                flash(f'Error fetching todos: {str(e)}', 'error')
+        else:
+            # Local development mode - show sample data
+            flash('Running in local development mode', 'info')
+        
         return render_template('index.html', todos=todos)
 
     @app.route('/todo/create', methods=['GET', 'POST'])
