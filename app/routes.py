@@ -16,7 +16,7 @@ def register_routes(app):
         todos = []
         if app.db:
             try:
-                todos_ref = app.db.collection('todos')
+                todos_ref = app.db.collection('todos').where('completed', '==', False)
                 for doc in todos_ref.order_by('created_at', direction='DESCENDING').stream():
                     todo_data = doc.to_dict()
                     todo_data['id'] = doc.id
@@ -107,15 +107,31 @@ def register_routes(app):
             app.db.collection('todos').document(id).update(todo.to_dict())
             
             flash('Task updated successfully!', 'success')
-            return redirect(url_for('index'))
+            # Redirect to the appropriate page based on task completion status
+            if completed:
+                return redirect(url_for('completed_tasks'))
+            else:
+                return redirect(url_for('index'))
         
         return render_template('edit.html', todo=todo)
 
     @app.route('/todo/<id>/delete', methods=['POST'])
     def delete_todo(id):
+        # Check if the task is completed before deleting
+        todo_doc = app.db.collection('todos').document(id).get()
+        was_completed = False
+        if todo_doc.exists:
+            todo_data = todo_doc.to_dict()
+            was_completed = todo_data.get('completed', False)
+            
         app.db.collection('todos').document(id).delete()
         flash('Task deleted successfully!', 'success')
-        return redirect(url_for('index'))
+        
+        # Redirect to the appropriate list
+        if was_completed:
+            return redirect(url_for('completed_tasks'))
+        else:
+            return redirect(url_for('index'))
 
     @app.route('/todo/<id>/toggle', methods=['POST'])
     def toggle_todo(id):
@@ -126,3 +142,18 @@ def register_routes(app):
             app.db.collection('todos').document(id).update({'completed': completed})
             return jsonify({'completed': completed})
         return jsonify({'error': 'Task not found'}), 404
+        
+    @app.route('/completed')
+    def completed_tasks():
+        todos = []
+        if app.db:
+            try:
+                todos_ref = app.db.collection('todos').where('completed', '==', True)
+                for doc in todos_ref.order_by('created_at', direction='DESCENDING').stream():
+                    todo_data = doc.to_dict()
+                    todo_data['id'] = doc.id
+                    todos.append(Todo.from_dict(todo_data))
+            except Exception as e:
+                flash(f'Error fetching completed tasks: {str(e)}', 'error')
+        
+        return render_template('completed.html', todos=todos)
