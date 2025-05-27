@@ -19,6 +19,7 @@ def create_app():
     app.db = db
     
     # Register routes
-    from app import routes
+    from app.routes import register_routes
+    register_routes(app)
     
     return app
