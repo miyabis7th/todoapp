@@ -16,11 +16,15 @@ def register_routes(app):
         todos = []
         if app.db:
             try:
+                # Query todos without ordering to avoid index requirement
                 todos_ref = app.db.collection('todos').where('completed', '==', False)
-                for doc in todos_ref.order_by('created_at', direction='DESCENDING').stream():
+                for doc in todos_ref.stream():
                     todo_data = doc.to_dict()
                     todo_data['id'] = doc.id
                     todos.append(Todo.from_dict(todo_data))
+                
+                # Sort in memory by created_at
+                todos.sort(key=lambda x: x.created_at, reverse=True)
             except Exception as e:
                 flash(f'Error fetching todos: {str(e)}', 'error')
         else:
@@ -148,11 +152,15 @@ def register_routes(app):
         todos = []
         if app.db:
             try:
+                # Query todos without ordering to avoid index requirement
                 todos_ref = app.db.collection('todos').where('completed', '==', True)
-                for doc in todos_ref.order_by('created_at', direction='DESCENDING').stream():
+                for doc in todos_ref.stream():
                     todo_data = doc.to_dict()
                     todo_data['id'] = doc.id
                     todos.append(Todo.from_dict(todo_data))
+                
+                # Sort in memory by created_at
+                todos.sort(key=lambda x: x.created_at, reverse=True)
             except Exception as e:
                 flash(f'Error fetching completed tasks: {str(e)}', 'error')
         
