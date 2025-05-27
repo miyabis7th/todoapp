@@ -2,6 +2,8 @@
 
 A modern Todo management application with Instagram-like UI, built with Flask and Google Cloud services.
 
+[![Deploy Status](https://img.shields.io/badge/deploy-active-brightgreen)](https://todoapp-129496739028.asia-northeast1.run.app/)
+
 ## Features
 
 - Task management (Create, Read, Update, Delete)

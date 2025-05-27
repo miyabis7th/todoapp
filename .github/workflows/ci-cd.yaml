@@ -29,6 +29,12 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v1
 
+      - name: Enable required APIs
+        run: |
+          gcloud services enable firestore.googleapis.com --project=$PROJECT_ID
+          gcloud services enable run.googleapis.com --project=$PROJECT_ID
+          gcloud services enable artifactregistry.googleapis.com --project=$PROJECT_ID
+
       - name: Configure Docker
         run: |
           gcloud auth configure-docker asia-northeast1-docker.pkg.dev
