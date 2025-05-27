@@ -137,13 +137,42 @@
         }
         
         .btn-outline-primary {
-            border-color: #E1306C;
-            color: #E1306C;
+            border-color: #007bff;
+            color: #007bff;
         }
         
         .btn-outline-primary:hover {
-            background-color: #E1306C;
+            background-color: #007bff;
             color: white;
+        }
+        
+        /* Enhanced button visibility on card hover */
+        .card:hover .btn-outline-primary {
+            border-color: #0056b3;
+            color: #0056b3;
+            background-color: rgba(255, 255, 255, 0.9);
+            font-weight: 600;
+        }
+        
+        .card:hover .btn-outline-primary:hover {
+            background-color: #0056b3;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+        }
+        
+        .card:hover .btn-outline-danger {
+            border-color: #dc3545;
+            color: #dc3545;
+            background-color: rgba(255, 255, 255, 0.9);
+            font-weight: 600;
+        }
+        
+        .card:hover .btn-outline-danger:hover {
+            background-color: #dc3545;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
         }
         
         .completed {
