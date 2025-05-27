@@ -107,8 +107,21 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    // Reload the page to move task to the appropriate list
-                    window.location.reload();
+                    const taskTitle = document.querySelector(`#todo-${todoId}`).closest('.card-body').querySelector('.card-title');
+                    const taskDesc = document.querySelector(`#todo-${todoId}`).closest('.card-body').querySelector('.card-text');
+                    
+                    if (this.checked) {
+                        taskTitle.classList.add('completed', 'strike-animation');
+                        taskDesc.classList.add('completed', 'strike-animation');
+                    } else {
+                        taskTitle.classList.remove('completed', 'strike-animation');
+                        taskDesc.classList.remove('completed', 'strike-animation');
+                    }
+                    
+                    // Reload the page after animation completes
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 500);
                 })
                 .catch(error => {
                     console.error('Error toggling todo status:', error);
