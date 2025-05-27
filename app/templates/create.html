@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Todo App - Create New Task{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4>Create New Task</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('create_todo') }}" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="title" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Image (optional)</label>
+                        <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                        <div class="form-text">Upload an image related to your task. Supported formats: PNG, JPG, JPEG, GIF.</div>
+                    </div>
+                    <div class="mb-3">
+                        <div id="image-preview" class="d-none">
+                            <img src="" alt="Preview" class="img-fluid mb-2" style="max-height: 200px;">
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Create Task</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const imageInput = document.getElementById('image');
+        const imagePreview = document.getElementById('image-preview');
+        const previewImg = imagePreview.querySelector('img');
+        
+        imageInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    imagePreview.classList.remove('d-none');
+                };
+                
+                reader.readAsDataURL(this.files[0]);
+            } else {
+                previewImg.src = '';
+                imagePreview.classList.add('d-none');
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,65 @@
+name: Build and Deploy to Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  SERVICE_NAME: ${{ secrets.GCP_SERVICE_NAME }}
+  REGION: asia-northeast1
+  AR_REPOSITORY: ${{ secrets.GCP_ARTIFACT_REGISTRY_REPO_NAME }}
+
+jobs:
+  setup-build-publish-deploy:
+    name: Setup, Build, Publish, and Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Google Auth
+        id: auth
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+
+      - name: Configure Docker
+        run: |
+          gcloud auth configure-docker asia-northeast1-docker.pkg.dev
+
+      - name: Create Artifact Registry Repository if it doesn't exist
+        run: |
+          REPO_EXISTS=$(gcloud artifacts repositories list --project=$PROJECT_ID --location=$REGION --filter="name:$AR_REPOSITORY" --format="value(name)")
+          if [ -z "$REPO_EXISTS" ]; then
+            echo "Creating Artifact Registry repository $AR_REPOSITORY..."
+            gcloud artifacts repositories create $AR_REPOSITORY \
+              --project=$PROJECT_ID \
+              --repository-format=docker \
+              --location=$REGION
+          else
+            echo "Artifact Registry repository $AR_REPOSITORY already exists."
+          fi
+
+      - name: Build and Push Container
+        run: |
+          IMAGE_NAME=asia-northeast1-docker.pkg.dev/$PROJECT_ID/$AR_REPOSITORY/$SERVICE_NAME:${{ github.sha }}
+          docker build -t $IMAGE_NAME .
+          docker push $IMAGE_NAME
+
+      - name: Deploy to Cloud Run
+        id: deploy
+        uses: google-github-actions/deploy-cloudrun@v1
+        with:
+          service: ${{ env.SERVICE_NAME }}
+          region: ${{ env.REGION }}
+          image: asia-northeast1-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPOSITORY }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
+          flags: --allow-unauthenticated
+
+      - name: Show Output
+        run: echo ${{ steps.deploy.outputs.url }}
